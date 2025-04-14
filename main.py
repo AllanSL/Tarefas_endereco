@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk, messagebox
 from processamento import processar_arquivo
 
 def escolher_arquivo():
@@ -8,7 +8,29 @@ def escolher_arquivo():
         filetypes=[("Arquivos Excel", "*.xlsx")]
     )
     if caminho:
-        processar_arquivo(caminho)
+        iniciar_processamento(caminho)
+
+def iniciar_processamento(caminho):
+    # Desativa botão
+    botao.config(state="disabled")
+    
+    # Cria barra de progresso determinística
+    barra_progresso = ttk.Progressbar(root, orient="horizontal", mode="determinate", maximum=100, length=300)
+    barra_progresso.pack(pady=10)
+    barra_progresso["value"] = 0
+
+    # Função para atualizar progresso
+    def atualizar_progresso(valor):
+        barra_progresso["value"] = valor
+        root.update_idletasks()
+
+    try:
+        processar_arquivo(caminho, progresso_callback=atualizar_progresso)
+    except Exception as e:
+        messagebox.showerror("Erro", f"Ocorreu um erro: {e}")
+    finally:
+        barra_progresso.destroy()
+        botao.config(state="normal")
 
 # Interface gráfica
 root = tk.Tk()
